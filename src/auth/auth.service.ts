@@ -69,4 +69,30 @@ export class AuthService {
     }
     throw new UnauthorizedException({ messade: "НЕККОРЕКТНО" });
   }
+
+  async loginGoogle(user: LoginUserDto) {
+    const customer = await this.customerService.findOneByEmail(user.email);
+
+    if (customer) {
+      const tkn = this.generateToken(customer);
+      return [tkn, customer];
+    } else {
+      throw new UnauthorizedException({ messade: "Не авторизован" });
+    }
+  }
+
+  async registrationGoogle(user: CreateUserDto) {
+    const customer = await this.customerService.findOneByEmail(user.email);
+
+    if (customer) {
+      throw new HttpException(
+        "Пользователь с таким email уже существует",
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    const man = await this.customerService.createUser(user);
+    const tkn = this.generateToken(man);
+    return [tkn, man];
+  }
 }
